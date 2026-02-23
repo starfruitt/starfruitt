@@ -1,0 +1,91 @@
+-- Create and populate tables
+CREATE TABLE PollingPlaces (
+    PollingPlaceID INT PRIMARY KEY,
+    PlaceName VARCHAR(100),
+    Address VARCHAR(100),
+    ZipCode VARCHAR(10),
+    Hours VARCHAR(50)
+);
+
+CREATE TABLE Voters (
+    VoterID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Address VARCHAR(100),
+    ZipCode VARCHAR(10),
+    PollingPlaceID INT,
+    FOREIGN KEY (PollingPlaceID) REFERENCES PollingPlaces(PollingPlaceID)
+);
+
+-- Insert sample data
+INSERT INTO PollingPlaces VALUES
+(1, 'Smalltown Elementary School', '123 Main St', '12345', '7am-8pm'),
+(2, 'Community Center', '456 Oak Ave', '12346', '7am-8pm'),
+(3, 'City Hall', '789 Pine Rd', '12347', '7am-8pm');
+
+INSERT INTO Voters VALUES
+(101, 'John', 'Doe', '100 Elm St', '12345', 1),
+(102, 'Jane', 'Smith', '200 Maple Dr', '12346', 2),
+(103, 'Robert', 'Johnson', '300 Cedar Ln', '12347', 3),
+(104, 'Mary', 'Williams', '400 Pine St', '12345', 1);
+
+-- 1. Test polling place locator with voter info
+SELECT 
+    v.FirstName,
+    v.LastName,
+    v.Address AS "Voter Address",
+    p.PlaceName AS "Polling Place",
+    p.Address AS "Polling Place Address",
+    p.Hours
+FROM Voters v
+JOIN PollingPlaces p ON v.PollingPlaceID = p.PollingPlaceID
+WHERE v.ZipCode = '12345';
+
+-- 2. Modify a table (add accessibility features)
+ALTER TABLE PollingPlaces
+ADD AccessibilityFeatures VARCHAR(100);
+
+UPDATE PollingPlaces
+SET AccessibilityFeatures = 'Wheelchair ramp, Handicap parking'
+WHERE PollingPlaceID = 1;
+
+-- 3. Prove table modification
+SELECT * FROM PollingPlaces
+WHERE PollingPlaceID = 1;
+
+-- 4. Delete a polling place (must handle foreign key constraint)
+-- First update voters assigned to this polling place
+UPDATE Voters
+SET PollingPlaceID = 1
+WHERE PollingPlaceID = 2;
+
+-- Then delete the polling place
+DELETE FROM PollingPlaces
+WHERE PollingPlaceID = 2;
+
+-- 5. Prove deletion
+SELECT * FROM PollingPlaces;
+
+-- 6. Add new polling place and zip code
+INSERT INTO PollingPlaces VALUES
+(4, 'Library Annex', '101 Birch Blvd', '12348', '7am-8pm', 'Elevator, Braille signage');
+
+-- Add voters with new zip code
+INSERT INTO Voters VALUES
+(105, 'David', 'Brown', '500 Oak Lane', '12348', 4),
+(106, 'Sarah', 'Miller', '600 Cedar Ave', '12348', 4);
+
+-- 7. Prove addition
+SELECT 
+    v.FirstName,
+    v.LastName,
+    v.Address AS "Voter Address",
+    p.PlaceName AS "New Polling Place",
+    p.Address AS "Polling Place Address"
+FROM Voters v
+JOIN PollingPlaces p ON v.PollingPlaceID = p.PollingPlaceID
+WHERE p.ZipCode = '12348';
+
+-- 8. Drop tables (must drop Voters first due to foreign key)
+DROP TABLE Voters;
+DROP TABLE PollingPlaces;
